@@ -1,6 +1,10 @@
 # Import modules
 import sys
+import os
+import json
 from helper import *
+from ruamel import yaml
+from pprint import pprint as pp
 
 import xml.etree.ElementTree as ET
 
@@ -12,7 +16,9 @@ if __name__ == "__main__":
     #              Procedure 1              #
     #########################################
     # Add print statement here
-
+    test = 'test'
+    print('DevNet')
+    test = 'no test'
 
     #########################################
     #              Procedure 2              #
@@ -22,26 +28,41 @@ if __name__ == "__main__":
     print('##################')
 
     # Open the user.yaml file as read only
+    # files = [f for f in os.listdir('.') if os.path.isfile(f)]
+    # for f in files:
+    #     print(f)
+    with open('./parsing_api_formats/user.yaml', 'r') as yaml_file:
+        user_yaml = yaml.safe_load(yaml_file)
 
-        # Load the stream using safe_load
+    # Load the stream using safe_load
 
     # Print the object type
     print("Type of user_yaml variable:")
-
+    print(type(user_yaml))
+    pp(user_yaml)
     print('----------------------')
 
     # Iterate over the keys of the user_yaml and print them
     print('Keys in user_yaml:')
-
+    for key, value in user_yaml.items():
+        print(key, value)
     print('----------------------')
 
     # Create a new instance of class User
+    user = User()
+    user.id = user_yaml['id']
+    user.first_name = user_yaml['first_name']
+    user.last_name = user_yaml['last_name']
+    user.birth_date = user_yaml['birth_date']
+    user.address = user_yaml['address']
+    user.score = user_yaml['score']
+
+    pp(user)
 
     # Assign values from the user_yaml to the object user
 
     # Print the user object
     print('User object:')
-
 
     #########################################
     #              Procedure 3              #
@@ -51,15 +72,15 @@ if __name__ == "__main__":
     print('##################')
 
     # Create JSON structure from the user object
-    
+
     # Print the created JSON structure
     print('Print user_json:')
-
+    user_json = json.dumps(user, default=serializeUser)
+    pp(user_json)
     print('----------------------')
 
     # Create JSON structure with indents and sorted keys
     print('JSON with indents and sorted keys')
-
 
     #########################################
     #              Procedure 4              #
@@ -69,53 +90,69 @@ if __name__ == "__main__":
     print('######################')
 
     # Parse the user.xml file
-
+    tree = ET.parse('./parsing_api_formats/user.xml')
     # Get the root element
-
+    root = tree.getroot()
     # Print the tags
-    print('Tags in the XML:')    
-
+    print('Tags in the XML:')
+    for el in root:
+        print(el.tag)
     print('----------------------')
 
     # Print the value of id tag
     print('id tag value:')
-
+    print(root.find('first_name').text)
+    print(root.find('score').text)
     print('----------------------')
 
     # Find all elements with the tag address in root
 
     # Print the adresses in the xml
     print('Addresses:')
-
+    addresses = root.findall('address')
+    for address in addresses:
+        for i in address:
+            print(i.text)
     print('----------------------')
-    
-    # Print the elements in root with their tags and values
-    print('Print the structure')    
 
-    # Parsing XML files with MiniDOM 
+    # Print the elements in root with their tags and values
+    print('Print the structure')
+    for k in root.iter():
+        print(k.tag + ':' + k.text)
+
+    # Parsing XML files with MiniDOM
     print('######################')
     print('### XML - MiniDOM ####')
     print('######################')
 
     # Parse the user.xml file
-
+    dom = MD.parse('./parsing_api_formats/user.xml')
+    print(dom)
     # Print the tags
 
-    print('----------------------')    
+    print('----------------------')
+    for node in dom.childNodes:
+        printTags(node.childNodes)
 
     # Accessing element value
     print('Accessing element value')
-
+    idElements = dom.getElementsByTagName('id')
+    print(idElements)
+    elementId = idElements.item(0)
+    idValue = elementId.firstChild.data
+    print(idValue)
     print('----------------------')
 
     # Print elements from the DOM with tag name 'address'
     print('Addresses:')
-
+    for node in dom.getElementsByTagName('address'):
+        printNodes(node.childNodes)
     print('----------------------')
 
     # Print the entire structure with printNodes
     print('The structure:')
-
+    for node in dom.childNodes:
+        printNodes(node.childNodes)
 
     #########################################
     #              Procedure 5              #
@@ -125,17 +162,28 @@ if __name__ == "__main__":
     print('######################')
 
     # Parse the user.xml file
+    itemTree = ET.parse('./parsing_api_formats/item.xml')
 
     # Get the root element
+    root = itemTree.getroot()
 
-    # Define namespaces 
+    # Define namespaces
+    namespaces = {'a': 'https://www.example.com/network',
+                  'b': 'https://www.example.com/furniture'}
 
-    # Set table as the root element 
+    # Set table as the root element
+    elementsInNSa = root.findall('a:table', namespaces)
+    elementsInNSb = root.findall('b:table', namespaces)
 
     # Elements in NS a
-    print('Elements in NS a:')   
+    print('Elements in NS a:')
+    for e in elementsInNSa:
+        for i in e.iter():
+            print(i.tag + ':' + i.text)
 
     print('----------------------')
 
     # Elements in NS b
     print('Elements in NS b:')
+    for element in list(elementsInNSb[0]):
+        print(element.tag + ':' + element.text)
